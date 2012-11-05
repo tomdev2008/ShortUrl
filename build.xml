@@ -1,0 +1,44 @@
+<?xml version="1.0" ?> 
+<project name="ShortUrl" default="war" basedir=".">
+	<description>Java short url servlet project</description>
+
+	<property name="src.dir" value="src" />
+	<property name="web.dir" value="WebContent" />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="lib.dir" value="${web.dir}/WEB-INF/lib" />
+
+	<path id="classpath">
+		<!--
+		<fileset dir="${server.lib}">
+			<include name="servlet*.jar" />
+		</fileset>
+		-->
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+
+	<target name="compile" depends="clean">
+		<mkdir dir="${build.dir}/classes" />
+		<javac destdir="${build.dir}/classes" failonerror="true">
+			<src path="${src.dir}" />
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="war" depends="compile">
+		<war destfile="${build.dir}/${ant.project.name}.war" webxml="${web.dir}/WEB-INF/web.xml">
+			<lib dir="${lib.dir}" />
+			<classes dir="${build.dir}/classes" />
+			<fileset dir="${web.dir}">
+				<include name="**/*.*" />
+			</fileset>
+		</war>
+    </target>
+
+    <target name="clean">
+    	<delete dir="${build.dir}" failonerror="true" />
+    </target>
+
+</project>
