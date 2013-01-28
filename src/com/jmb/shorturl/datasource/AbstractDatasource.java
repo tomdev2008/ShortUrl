@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import com.jmb.shorturl.model.Url;
 import com.jmb.shorturl.util.Base62Encoder;
 import com.jmb.shorturl.exception.UrlException;
+import com.jmb.shorturl.exception.ShortUrlException;
 import com.jmb.shorturl.exception.UrlNotFoundException;
 
 public abstract class AbstractDatasource {
@@ -16,7 +17,9 @@ public abstract class AbstractDatasource {
 	}
 
 	public Url getUrl(char[] shortUrl) throws UrlNotFoundException {
-		return getUrl(new Base62Encoder().decode(shortUrl));
+	return getUrl(new Base62Encoder().decode(shortUrl));
 	}
+
+  public abstract Url createNewShortUrl(String longUrl) throws ShortUrlException;
 
 }

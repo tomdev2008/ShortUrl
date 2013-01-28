@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutionException;
 
 import com.jmb.shorturl.model.Url;
+import com.jmb.shorturl.exception.ShortUrlException;
 import com.jmb.shorturl.exception.UrlException;
 import com.jmb.shorturl.exception.UrlNotFoundException;
 import com.jmb.shorturl.util.Config;
@@ -40,6 +41,10 @@ public class Datasource extends AbstractDatasource {
 			throw new UrlNotFoundException("error while getting url", e);
 		}
 		
+	}
+
+	public Url createNewShortUrl(String longUrl) throws ShortUrlException {
+		return dsDb.createNewShortUrl(longUrl);
 	}
 
 }

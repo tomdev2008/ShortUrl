@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+  <script src="http://justinmburrous.com/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="http://justinmburrous.com/bootstrap/css/bootstrap.min.css"></link>
+  <link rel="stylesheet" type="text/css" href="http://justinmburrous.com/bootstrap/css/bootstrap-responsive.min.css"></link>
+  <script type="text/javascript">
+
+    $(document).ready(function(){
+
+      var is_valid = function(link){
+        //TODO - implement this feature
+        return true
+      }
+
+      $("#long-url-submit-button").click(function(e){
+        var link_value = $('#long-url-text-box').val()
+        if(is_valid(link_value)){
+          $.ajax({
+            url: "/",
+            data: {long_url: link_value},
+            type: "POST"
+          }).done(function(data, status, jqXHR){
+            console.log(data)
+            $("#new_link_link").attr("href", "/" + data.shortUrl)
+            $("#new_link_link").text("/" + data.shortUrl)
+            $("#long_link_link").attr("href", data.longUrl)
+            $("#long_link_link").text(data.longUrl)
+            $("#new_link_modal").modal()
+          }).fail(function(jsXHR, status, errorThrown){
+            //TODO - error this part here
+            console.log(status)
+          })
+        }else{
+          console.log("invalid link value, make that link valid and try again")
+        }
+      })      
+    })
+
+  </script>
+  <title>ShortUrl - jmb</title>
+</head>
+<body>
+  
+  <div class="container">
+    <input id='long-url-text-box' type="text" placeholder="Enter a long url...">
+    <button id="long-url-submit-button" class='btn'>Make it short!</button>
+
+    <div id="new_link_modal" class="modal hide fade">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Your new link</h3>
+      </div>
+      <div class="modal-body">
+        <a id="long_link_link" href=""></a>
+        <br />
+        <br />
+        <a id="new_link_link" href=""></a>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

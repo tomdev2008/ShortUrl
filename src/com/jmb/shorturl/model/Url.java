@@ -53,7 +53,7 @@ public class Url {
 	}
 
 	public String toJson(){
-		return "{\"longUrl\": " + longUrl + ", \"shortUrl\": " + shortUrl + "}";
+		return "{\"longUrl\": \"" + String.valueOf(longUrl) + "\", \"shortUrl\": \"" + String.valueOf(shortUrl) + "\"}";
 	}
 
 	@Override
