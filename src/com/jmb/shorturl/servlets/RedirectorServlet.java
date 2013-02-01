@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.RequestDispatcher;
@@ -38,7 +39,6 @@ public class RedirectorServlet extends HttpServlet {
 	private static final String[] allowedSchemes = {"http", "https"};
 	private static final UrlValidator validator = new UrlValidator();
 
-	private static final File indexFile = new File("/home/justinmburrous/workspace/ShortUrl/WebContent/WEB-INF/index.html");
 	private static final int BUFFER_SIZE = 1024;
 
 	private static final String shortRegexString = "^/[a-zA-Z0-9_-]+$";
@@ -52,6 +52,7 @@ public class RedirectorServlet extends HttpServlet {
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
+		super.init(config);
 		ds = new Datasource();
 	}
 
@@ -70,7 +71,10 @@ public class RedirectorServlet extends HttpServlet {
 			//re-direct issues with the catch-all link, stuck with this option for now
 			if(requestedPath.equals("/")){
 				response.setContentType("text/html");
+				String indexFileLocation = getServletContext().getRealPath("/") + "/WEB-INF/index.html";
 				ServletOutputStream out = response.getOutputStream();
+				File indexFile = new File(indexFileLocation);
+				log.info("index file => " + indexFile.getAbsolutePath());
 				FileInputStream in = new FileInputStream(indexFile);
 				byte[] bytes = new byte[BUFFER_SIZE];
 				int bytesRead;
