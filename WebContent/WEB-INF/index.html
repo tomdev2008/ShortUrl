@@ -8,13 +8,16 @@
   <script type="text/javascript">
 
     $(document).ready(function(){
-
       var is_valid = function(link){
-        //TODO - implement this feature
-        return true
+        var reg = /^(http[s]?:\/\/){0,1}(www\.){0,1}[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,5}[\.]{0,1}/
+        if(link.match(reg)){
+          return true
+        }
+        return false
       }
-
       $("#long-url-submit-button").click(function(e){
+        //hide if still open 
+        $("#alert-div").hide()
         var link_value = $('#long-url-text-box').val()
         if(is_valid(link_value)){
           $.ajax({
@@ -24,42 +27,93 @@
           }).done(function(data, status, jqXHR){
             console.log(data)
             $("#new_link_link").attr("href", "/" + data.shortUrl)
-            $("#new_link_link").text("/" + data.shortUrl)
+            $("#new_link_link").text("jburr.co/" + data.shortUrl)
             $("#long_link_link").attr("href", data.longUrl)
             $("#long_link_link").text(data.longUrl)
             $("#new_link_modal").modal()
           }).fail(function(jsXHR, status, errorThrown){
-            //TODO - error this part here
+            alert_bar("error creating new short url")
             console.log(status)
           })
         }else{
           console.log("invalid link value, make that link valid and try again")
+          alert_bar("invalid url, please check form")
         }
       })      
     })
 
+    var alert_bar = function(text){
+      $("#alert-text").text(text)
+      $("#alert-div").show()
+    }
+
   </script>
-  <title>ShortUrl - jmb</title>
+  <style tyle="text/css" rel="stylesheet">
+    #header-text{
+      text-align: center;
+    }
+    #header-sub-head{
+      text-align: center;
+    }
+    #short-url-create-box{
+      width: 50%; 
+      margin: 0 auto;
+      padding: 20% 0px 0px 0px;
+    }
+    #alert-div{
+      margin: 0 auto;
+      width: 50%;
+      display: none;
+    }
+  </style>
+  <title>jburr.co</title>
 </head>
 <body>
-  
-  <div class="container">
-    <input id='long-url-text-box' type="text" placeholder="Enter a long url...">
-    <button id="long-url-submit-button" class='btn'>Make it short!</button>
 
-    <div id="new_link_modal" class="modal hide fade">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3>Your new link</h3>
-      </div>
-      <div class="modal-body">
-        <a id="long_link_link" href=""></a>
-        <br />
-        <br />
-        <a id="new_link_link" href=""></a>
+  <a href="https://github.com/justinmburrous/ShortUrl"><img style="position: absolute; top: 0; left: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
+
+  <div class="container">
+    <div class="row">
+      <div class="span10 offest1">
+        <h1 id="header-text">jburr.co</h1>
+        <h3 id="header-sub-head">Because why wouldn't you make your own</h3>
       </div>
     </div>
+    <div class="row">
+      <div class="span12">
+        <div id="short-url-create-box">
+          <input id='long-url-text-box' type="text" placeholder="http://long_url_here...">
+          <button id="long-url-submit-button" class='btn'>Make it short!</button>
+        </div>
+        <div id="alert-div" class="alert alert-error">
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+          <p id="alert-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- modal below -->
+  <div id="new_link_modal" class="modal hide fade">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Your new link</h3>
+    </div>
+    <div class="modal-body">
+      <table class='table'>
+        <caption>Link information</caption>
+        <tbody>
+          <tr>
+            <td><p>Short Link</p></td>
+            <td><a id="new_link_link" href=""></a></td>
+          </tr>
+          <tr>
+            <td><p>Long Link</p></td>
+            <td><a id="long_link_link" href=""></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
 </body>

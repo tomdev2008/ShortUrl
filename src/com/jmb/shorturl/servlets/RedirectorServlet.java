@@ -18,6 +18,8 @@ import javax.servlet.RequestDispatcher;
 
 import org.apache.log4j.Logger;
 
+import org.apache.commons.validator.UrlValidator;
+
 import com.jmb.shorturl.datasource.AbstractDatasource;
 import com.jmb.shorturl.datasource.Datasource;
 import com.jmb.shorturl.exception.UrlException;
@@ -32,6 +34,9 @@ public class RedirectorServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(RedirectorServlet.class);
 
 	private static final Base62Encoder encoder = new Base62Encoder();
+
+	private static final String[] allowedSchemes = {"http", "https"};
+	private static final UrlValidator validator = new UrlValidator();
 
 	private static final File indexFile = new File("/home/justinmburrous/workspace/ShortUrl/WebContent/WEB-INF/index.html");
 	private static final int BUFFER_SIZE = 1024;
@@ -54,7 +59,6 @@ public class RedirectorServlet extends HttpServlet {
 		if(url == null){
 			return false;
 		}
-
 		Matcher matcher = shortUrlPattern.matcher(url);
 		return matcher.matches();
 	}
@@ -106,20 +110,22 @@ public class RedirectorServlet extends HttpServlet {
 		if(url == null){
 			return false;
 		}
-
-		//TODO - impement this later!!!!
-		return true;
-
+		if(validator.isValid(url)){
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("application/json");
-		//TODO - make sure http:// is included, otherwise you will get an internal local redirect to a 404
 		String requestedLongUrl = request.getParameter("long_url");
+		if(!requestedLongUrl.contains("http://")){ //user may not included this on POST
+			requestedLongUrl = "http://" + requestedLongUrl;
+		}
 		if(!validLongUrl(requestedLongUrl)){
 			log.error("error, that is an invalid link");
-			response.sendError(200);
+			response.sendError(400);
 			return;
 		}
 
@@ -127,9 +133,8 @@ public class RedirectorServlet extends HttpServlet {
 		try{
 			createdUrl = ds.createNewShortUrl(requestedLongUrl);
 		}catch(ShortUrlException e){
-			//TODO = deal with this error here
 			log.error("error creating a new short url", e);
-			response.sendError(200);
+			response.sendError(400);
 			return;
 		}
 

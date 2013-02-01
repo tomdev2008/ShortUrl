@@ -24,7 +24,6 @@ public class DatabaseDataSource extends AbstractDatasource {
 	private static final String insertSql = "INSERT INTO `short_url`.`short_url` (`long_url`) VALUES ( ? );";
 	private static final String updateSql = "UPDATE `short_url`.`short_url` SET `short_url`= ? WHERE `id`= ? ;";
 
-	//TODO - look into better null pointer allerting
 	private static Connection connection = null;
 
 	public DatabaseDataSource() {
@@ -101,7 +100,7 @@ public class DatabaseDataSource extends AbstractDatasource {
 		
 		try{
 			Connection cnx = getConnection();
-			cnx.setAutoCommit(false); //use transactions for this!!!!  //TODO - test this transaction later
+			cnx.setAutoCommit(false);
 			insertStatement = cnx.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
 			insertStatement.setString(1, longUrl);
 			
