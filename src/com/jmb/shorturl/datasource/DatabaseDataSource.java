@@ -19,7 +19,7 @@ public class DatabaseDataSource extends AbstractDatasource {
 
 	private static final Logger log = Logger.getLogger(DatabaseDataSource.class);
 
-	private static final String CONNECTION_URL = "jdbc:mysql://" + Config.SQL_HOST + "/" + Config.DB_NAME + "?user=" + Config.SQL_USERNAME + "&password=" + Config.SQL_PASSWORD;
+	private static final String CONNECTION_URL = "jdbc:mysql://" + Config.SQL_HOST + "/" + Config.DB_NAME + "?autoReconnect=true&user=" + Config.SQL_USERNAME + "&password=" + Config.SQL_PASSWORD;
 
 	private static final String insertSql = "INSERT INTO `short_url`.`short_url` (`long_url`) VALUES ( ? );";
 	private static final String updateSql = "UPDATE `short_url`.`short_url` SET `short_url`= ? WHERE `id`= ? ;";

@@ -1,3 +1,6 @@
 *.class
 build/
 sql/
+Vagrantfile
+vagrantup.sh
+.vagrant
