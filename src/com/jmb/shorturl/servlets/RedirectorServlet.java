@@ -60,6 +60,9 @@ public class RedirectorServlet extends HttpServlet {
 		if(url == null){
 			return false;
 		}
+		if(url.length() < 1){
+			return false;
+		}
 		Matcher matcher = shortUrlPattern.matcher(url);
 		return matcher.matches();
 	}

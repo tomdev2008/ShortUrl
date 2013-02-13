@@ -21,8 +21,10 @@ public class DatabaseDataSource extends AbstractDatasource {
 
 	private static final String CONNECTION_URL = "jdbc:mysql://" + Config.SQL_HOST + "/" + Config.DB_NAME + "?autoReconnect=true&user=" + Config.SQL_USERNAME + "&password=" + Config.SQL_PASSWORD;
 
-	private static final String insertSql = "INSERT INTO `short_url`.`short_url` (`long_url`) VALUES ( ? );";
-	private static final String updateSql = "UPDATE `short_url`.`short_url` SET `short_url`= ? WHERE `id`= ? ;";
+	private static final String INSERT_LONG_URL_STATEMENT = "INSERT INTO `short_url`.`short_url` (`long_url`) VALUES ( ? );";
+	private static final String UPDATE_LONG_URL_STATEMENT = "UPDATE `short_url`.`short_url` SET `short_url`= ? WHERE `id`= ? ;";
+	private static final String SELECT_LONG_URL_QUERY = "SELECT `id`, `short_url` FROM `short_url`.`short_url` WHERE `long_url` = ?;";
+	private static final String SELECT_SHORT_URL_QUERY = "SELECT * FROM `short_url`.`short_url` WHERE id = ?;";
 
 	//will handle null connections better
 	private Connection getConnection() throws SQLException {
@@ -42,13 +44,14 @@ public class DatabaseDataSource extends AbstractDatasource {
 	@Override
 	public Url getUrl(int urlId) throws UrlNotFoundException {
 		Url url = null;
-		Statement statement = null;
+		PreparedStatement statement = null;
 		ResultSet set = null;
 		
 		try {
 			Connection cnx = getConnection();
-			statement = cnx.createStatement();
-			set = statement.executeQuery("SELECT * FROM " + Config.DB_NAME + "." + Config.TABLE_NAME + " WHERE id = " + urlId);
+			statement = cnx.prepareStatement(SELECT_SHORT_URL_QUERY);
+			statement.setInt(1, urlId);
+			set = statement.executeQuery();
 			
 			//there is of course only one url with this id
 			if(set.next()){
@@ -72,19 +75,41 @@ public class DatabaseDataSource extends AbstractDatasource {
 		return url;
 	}
 
-	public Url createNewShortUrl(String longUrl) throws ShortUrlException {
+	public Url createNewShortUrl(final String longUrl) throws ShortUrlException {
 		Url createdUrl = null;
 				
 		PreparedStatement insertStatement = null;
 		PreparedStatement postInsertUpdateStatement = null;
+
+		ResultSet foundLongUrlSet = null;
+		PreparedStatement selectLongStatements = null;
 		
 		String generatedShortUrl = null;
 		int generatedId = 0; //must be greater than 1 later
 		
 		try{
 			Connection cnx = getConnection();
+			
+			//see if the long url already exists
+			selectLongStatements = cnx.prepareStatement(SELECT_LONG_URL_QUERY);
+			selectLongStatements.setString(1, longUrl);
+			foundLongUrlSet = selectLongStatements.executeQuery();
+			
+			//return existing short url if long already exists
+			if(foundLongUrlSet.next()){				
+				int foundId = foundLongUrlSet.getInt("id");
+				createdUrl = new Url(foundId, longUrl);
+				cnx.close();
+				log.info("long url exists already, returning id= " + foundId + " instead of creating new one");
+				return createdUrl;
+			}else{
+				log.info("existing long url for url: " + longUrl + " does not exist, creating new one");
+			}
+
+
+			//begin create if long doesnt exist already
 			cnx.setAutoCommit(false);
-			insertStatement = cnx.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
+			insertStatement = cnx.prepareStatement(INSERT_LONG_URL_STATEMENT, Statement.RETURN_GENERATED_KEYS);
 			insertStatement.setString(1, longUrl);
 			
 			int insertRow = insertStatement.executeUpdate();	
@@ -109,7 +134,7 @@ public class DatabaseDataSource extends AbstractDatasource {
 			}
 	
 			createdUrl = new Url(generatedId, longUrl);
-			postInsertUpdateStatement = cnx.prepareStatement(updateSql);
+			postInsertUpdateStatement = cnx.prepareStatement(UPDATE_LONG_URL_STATEMENT);
 			postInsertUpdateStatement.setString(1, createdUrl.getShortUrlString());
 			postInsertUpdateStatement.setInt(2, createdUrl.getUrlId());
 			int sqlUpdateRows = postInsertUpdateStatement.executeUpdate();
