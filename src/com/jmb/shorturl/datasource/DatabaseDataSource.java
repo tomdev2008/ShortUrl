@@ -24,37 +24,19 @@ public class DatabaseDataSource extends AbstractDatasource {
 	private static final String insertSql = "INSERT INTO `short_url`.`short_url` (`long_url`) VALUES ( ? );";
 	private static final String updateSql = "UPDATE `short_url`.`short_url` SET `short_url`= ? WHERE `id`= ? ;";
 
-	private static Connection connection = null;
-
-	public DatabaseDataSource() {
-		log.info("establishing new database connection");
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-			if (connection == null) {// first time startup null pointer issues
-				connection = DriverManager.getConnection(CONNECTION_URL);
-			} else if(connection.isClosed()) {
-				connection = DriverManager.getConnection(CONNECTION_URL);
-			} else{
-				log.fatal("FAILED TO GET/RE-OPEN DATABASE CONNECTION");
-			}
-		} catch (ClassNotFoundException e) {
-			log.info("The database driver class was not found, class=com.mysql.jdbc.Driver", e);
-		} catch (SQLException e) {
-			log.info("SQL exception while extablishing a database connection", e);
-		}
-	}
-
 	//will handle null connections better
-	private static Connection getConnection() throws SQLException {
-		if(connection.isClosed()){
-			try{
-				Class.forName("com.mysql.jdbc.Driver");
-				connection = DriverManager.getConnection(CONNECTION_URL);
-			}catch(ClassNotFoundException e){
-				log.error("sql driver class not found", e);
-			}
+	private Connection getConnection() throws SQLException {
+		Connection cnx = null;
+		try{
+			Class.forName("com.mysql.jdbc.Driver");
+			cnx = DriverManager.getConnection(CONNECTION_URL);
+		}catch(ClassNotFoundException e){
+			log.error("sql driver class not found", e);
 		}
-		return connection;
+		if(cnx == null){
+			log.error("db connection was null");
+		}
+		return cnx;
 	}
 
 	@Override
@@ -64,7 +46,8 @@ public class DatabaseDataSource extends AbstractDatasource {
 		ResultSet set = null;
 		
 		try {
-			statement = getConnection().createStatement();
+			Connection cnx = getConnection();
+			statement = cnx.createStatement();
 			set = statement.executeQuery("SELECT * FROM " + Config.DB_NAME + "." + Config.TABLE_NAME + " WHERE id = " + urlId);
 			
 			//there is of course only one url with this id
@@ -81,7 +64,7 @@ public class DatabaseDataSource extends AbstractDatasource {
 			if(url == null){
 				throw new UrlNotFoundException("no url found with id = " + urlId);
 			}
-
+			cnx.close();
 		} catch (SQLException e) {
 			log.info("sql exception while retrieving url id=" + urlId, e);
 			throw new UrlNotFoundException("sql exception while getting url", e);
@@ -140,7 +123,7 @@ public class DatabaseDataSource extends AbstractDatasource {
 			cnx.commit();
 			cnx.setAutoCommit(true);
 			log.info("url created sucessfully: " + createdUrl.toString());
-
+			cnx.close();
 		}catch(SQLException e){
 			throw new ShortUrlException(e);
 		}
