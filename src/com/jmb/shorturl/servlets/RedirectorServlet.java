@@ -71,34 +71,8 @@ public class RedirectorServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			String requestedPath = request.getRequestURI();
-			//re-direct issues with the catch-all link, stuck with this option for now
-			if(requestedPath.equals("/")){
-				
-				//For stack-overflow question
-				//the commented code below works fine
-
-				// response.setContentType("text/html");
-				// String indexFileLocation = getServletContext().getRealPath("/") + "/WEB-INF/index.html";
-				// ServletOutputStream out = response.getOutputStream();
-				// File indexFile = new File(indexFileLocation);
-				// log.info("index file => " + indexFile.getAbsolutePath());
-				// FileInputStream in = new FileInputStream(indexFile);
-				// byte[] bytes = new byte[BUFFER_SIZE];
-				// int bytesRead;
-				// while((bytesRead = in.read(bytes)) != -1){
-				// 	out.write(bytes, 0, bytesRead);
-				// }
-				// in.close();
-				// out.close();
-				// return;
-
-
-				//tried with multiple variations of /index.html, renamed to jsp, etc...
-				RequestDispatcher dispatcher = request.getRequestDispatcher("index.html");
-				dispatcher.forward(request, response);
-
-			}
-
+			//hacky due to filter's catchall
+			requestedPath = requestedPath.replace("/redirects", "");
 			if(!isValidShortUrl(requestedPath)){
 				log.info("invalid short url requested url=" + requestedPath);
 				response.sendError(404);
