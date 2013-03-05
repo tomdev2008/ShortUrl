@@ -24,7 +24,7 @@ public class StaticFilter implements Filter {
 
   public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
     HttpServletRequest req = (HttpServletRequest) request;
-    String path = req.getRequestURI();//.substring(req.getContextPath().length());
+    String path = req.getRequestURI();
     if(path.equals("/") || path.equals("")){
       request.getRequestDispatcher("/WEB-INF/static/index.html").forward(request, response);
     }else{
